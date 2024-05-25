@@ -24,8 +24,7 @@ router.post('/register', (req, res, next) => {
   const queryUsers = req.db.from("users").select("*").where("email", "=", email);
   queryUsers.then(users => {
     if (users.length > 0){
-      res.status(409).json({error: true, message: "User already exists"});
-      return;
+      throw new Error("User already exists");
     }
 
     // Insert user into the table

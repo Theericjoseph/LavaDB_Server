@@ -94,6 +94,75 @@ router.get('/volcano/:volcano_id', authorization, (req, res) => {
     });
 });
 
+router.post('/volcano/:id/addcomment', authorization, (req, res) => {
+  const volcano_id = req.params.id;
+  const comment = req.body.comment;
+  const rating = req.body.rating;
+
+  if (!req.isAuthenticated ) {
+    return res.status(401).json({ error: true, message: "Authorization header ('Bearer token') not found" });
+  }
+
+  // Check for missing required body parameters
+  if (!comment || !rating) {
+    return res.status(400).json({ error: true, message: "Request body incomplete: comment and rating are required." });
+  }
+
+  // Check if rating is an integer between 1 and 5
+  if (isNaN(rating) || rating < 1 || rating > 5) {
+    return res.status(400).json({ error: true, message: "Invalid input: rating must be an integer between 1 and 5." });
+  }
+
+  // Check if comment is a string
+  if (typeof comment !== 'string') {
+    return res.status(400).json({ error: true, message: "Invalid input: comment must be a string." });
+  }
+
+  // Check if volcano with id exists
+  req.db("data").select("*").where("id", "=", volcano_id)
+  .then((volcanoes) => {
+    if (!volcanoes || volcanoes.length === 0) {
+      throw { status: 404, message: `Volcano with ID ${volcano_id} not found.` };
+    }
+  })
+  .then(() => {
+    // Check if the user has already commented on this volcano
+    return req.db("comments").select("*").where("volcanoId", "=", volcano_id).andWhere("userEmail", "=", req.user)
+  })
+  .then((comments) => {
+    if (!comments || comments.length > 0){
+      throw { status: 409, message: "You have already commented on this volcano." };
+    }
+
+    // Insert the comment into the database
+    return req.db("comments").insert({volcanoId: volcano_id, userEmail: req.user, comments: comment, rating: rating})
+  })
+  .then(()=> {
+    return res.status(201).json({message: "Comment added successfully."});
+  })
+  .catch(err => {
+    console.log(err);
+    res.status(err.status || 500).json({error: true, message: err.message});
+  });
+})
+
+router.get('/volcano/:id/comments', (req, res) => {
+  const volcano_id = req.params.id;
+  req.db("comments").select("*").where("volcanoId", "=", volcano_id)
+  .then((comments) => {
+    if (comments.length === 0) {
+      res.status(404).json({error: true, message: `No comments found for volcano with ID ${volcano_id}.`});
+      return;
+    }
+
+    res.json(comments);
+  })
+  .catch(err => {
+    console.log(err);
+    res.status(400).json({error: true, message: "Invalid query parameters. Query parameters are not permitted."});
+  });
+})
+
 router.get('/me', (req, res) => {
   res.send({
     name: 'Eric Joseph Kizhakkebhagathu',

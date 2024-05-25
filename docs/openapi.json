@@ -513,6 +513,236 @@
         }
       }
     },
+    "/volcano/{id}/comments": {
+      "get": {
+        "tags" : ["Data"],
+        "description": "Returns an array of comments for the queried volcano. The path parameter (id) is required.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the volcano",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses":{
+          "200": {
+            "description": "An array of objects containing id of the comment , id of the volcano, email of the user who wrote the comment, the rating the user gave the volcano and th comment of the user. An example of one object in the array is shown below.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "number",
+                        "example": 1
+                      },
+                      "volcanoId": {
+                        "type": "number",
+                        "example": 1
+                      },
+                      "userEmail": {
+                        "type": "string",
+                        "example": "mike@gmail.com"
+                      },
+                      "rating": {
+                        "type": "number",
+                        "example": 5
+                      },
+                      "comment": {
+                        "type": "string",
+                        "example": "This volcano is beautiful."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+      
+          },
+          "400" : {
+            "description": "Invalid parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/InvalidParametersVolcano"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No comments found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "error": {
+                        "type": "boolean",
+                        "example": true
+                      },
+                      "message": {
+                        "type": "string",
+                        "example": "No comments found for volcano with ID 9999999."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/volcano/{id}/addcomment": {
+      "post": {
+        "tags": ["Data"],
+        "description": "Adds a new comment to the queried volcano. The path parameter (id) is required. A request body containing the rating and comment must be sent.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID of the volcano",
+            "required": true,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "description": "An object containing the rating and the comment the user gave the volcano.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "comment": {
+                    "type": "string",
+                    "example": "This volcano is beautiful."
+                  },
+                  "rating": {
+                    "type": "number",
+                    "example": "5"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Comment added successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Comment added successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": "true"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "Request body incomplete, both comment and rating are required"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "User already commented",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "boolean",
+                      "example": "true"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "You have already commented on this volcano."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized. Click on 'Schema' below to see the possible error responses.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/MissingAuthHeader"
+                    },
+                    {
+                      "$ref": "#/components/schemas/TokenExpired"
+                    },
+                    {
+                      "$ref": "#/components/schemas/InvalidJWT"
+                    },
+                    {
+                      "$ref": "#/components/schemas/MalformedAuthHeader"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Volcano ID not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/VolcanoIdNotFound"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/user/register": {
       "post": {
         "tags": ["Authentication"],
