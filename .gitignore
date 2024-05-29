@@ -1,5 +1,5 @@
 #npm 
 node_modules/
 
-#environment variables
-.env
+# #environment variables
+# .env
