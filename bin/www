@@ -7,7 +7,9 @@
 var app = require('../app');
 var debug = require('debug')('lavadb-server:server');
 var http = require('http');
-
+const fs = require('fs');
+var https = require('https');
+var path = require('path');
 /**
  * Get port from environment and store in Express.
  */
@@ -19,7 +21,16 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+var options = {
+  key: fs.readFileSync("selfsigned.key","utf8"),
+  cert: fs.readFileSync("selfsigned.crt","utf8")
+};
+
+/**
+ * Create HTTP server.
+ */
+
+var server = https.createServer(options, app);
 
 /**
  * Listen on provided port, on all network interfaces.
